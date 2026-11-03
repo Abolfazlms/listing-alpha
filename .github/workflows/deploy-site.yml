@@ -36,7 +36,7 @@ jobs:
       SITE_URL: ${{ vars.SITE_URL }}
       PAGES_PROJECT: ${{ vars.PAGES_PROJECT }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: actions/setup-node@v4
         with:
