@@ -1,0 +1,19 @@
+{
+  "success": true,
+  "data": {
+    "notices": [
+      {
+        "id": 123456,
+        "title": "Upbit will add NOVA (NOVA) to the KRW market",
+        "created_at": "2026-11-02T01:40:00",
+        "url": "https://upbit.com/service_center/notice?id=123456"
+      },
+      {
+        "id": 123457,
+        "title": "Upbit will delist OLDTOK (OLDTOK) on November 20",
+        "created_at": "2026-11-02T01:42:00",
+        "url": "https://upbit.com/service_center/notice?id=123457"
+      }
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "code": 200,
+  "data": {
+    "list": [
+      {
+        "id": 555001,
+        "title": "MEXC Will List Nova Protocol (NOVA) and Launch the Kickstarter",
+        "createTime": 1793582400000
+      },
+      {
+        "id": 555002,
+        "title": "MEXC Will Delist OLDTOK and Remove the Trading Pair",
+        "createTime": 1793582700000
+      }
+    ]
+  }
+}

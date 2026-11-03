@@ -1,0 +1,25 @@
+{
+  "name": "listing-alpha",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Real-time CEX listing intelligence for crypto traders: instant alerts, listing-reaction statistics, and a data API.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test --test-isolation=none \"test/*.test.js\"",
+    "demo": "node scripts/demo.mjs",
+    "build:site": "node scripts/build-site.mjs",
+    "report": "node scripts/build-report.mjs",
+    "check:sources": "node scripts/check-sources.mjs",
+    "export": "node scripts/export-snapshot.mjs",
+    "dev": "wrangler dev --test-scheduled",
+    "deploy": "wrangler deploy",
+    "db:init": "wrangler d1 execute listing-alpha --remote --file=schema.sql",
+    "db:local": "wrangler d1 execute listing-alpha --local --file=schema.sql"
+  },
+  "devDependencies": {
+    "wrangler": "^4.40.0"
+  }
+}

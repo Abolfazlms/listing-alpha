@@ -1,0 +1,39 @@
+name = "listing-alpha"
+main = "src/worker/index.js"
+compatibility_date = "2026-10-01"
+workers_dev = true
+
+# Two schedules:
+#   */5  -> poll exchange announcement feeds + reconcile USDT invoices
+#   */10  -> flush the delayed (free-tier) alert queue
+[triggers]
+crons = ["*/5 * * * *", "*/10 * * * *"]
+
+[observability]
+enabled = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "listing-alpha"
+# Replace after: npx wrangler d1 create listing-alpha
+database_id = "00000000-0000-0000-0000-000000000000"
+
+[vars]
+PUBLIC_SITE = "https://listing-alpha.example.workers.dev"
+FREE_CHANNEL = ""
+PAID_CHANNEL = ""
+# Paid-tier invite link (Telegram). Leave empty to disable invite delivery.
+INVITE_LINK = ""
+# Delay before an event reaches the free channel, in seconds.
+PAYWALL_DELAY_SEC = "900"
+# Where USDT lands. TRC20 by default (cheapest fees).
+MERCHANT_TRON_ADDRESS = ""
+USDT_TRC20_CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t"
+TRONGRID_BASE = "https://api.trongrid.io"
+# Free API keeps the last 7 days; anything older needs a license key.
+FREE_WINDOW_DAYS = "7"
+
+# Secrets (never commit): `npx wrangler secret put NAME`
+#   TELEGRAM_BOT_TOKEN
+#   ADMIN_TOKEN
+#   TRONGRID_API_KEY   (optional, raises rate limits)

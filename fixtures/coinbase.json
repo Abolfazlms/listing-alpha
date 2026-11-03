@@ -1,0 +1,18 @@
+{
+  "data": {
+    "announcements": [
+      {
+        "id": "cb-2026-11-02-nova",
+        "title": "Nova Protocol (NOVA) is now available on Coinbase",
+        "createdAt": "2026-11-02T01:35:00Z",
+        "slug": "nova-protocol"
+      },
+      {
+        "id": "cb-2026-11-02-oldtok",
+        "title": "OLDTOK trading will be suspended on Coinbase",
+        "createdAt": "2026-11-02T01:38:00Z",
+        "slug": "oldtok"
+      }
+    ]
+  }
+}

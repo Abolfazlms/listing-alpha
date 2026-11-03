@@ -1,0 +1,71 @@
+name: deploy-site
+
+# Publishes the static SEO surface to Cloudflare Pages. This is the
+# "publication" half of the project, which is exactly the kind of job GitHub
+# Actions is for. The data itself comes from the Worker's admin export.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'site/**'
+      - 'scripts/build-site.mjs'
+      - 'src/lib/**'
+      - 'wrangler.toml'
+      - '.github/workflows/deploy-site.yml'
+  schedule:
+    # Daily refresh so the site never looks abandoned to crawlers.
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-site
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      API_BASE: ${{ vars.API_BASE }}
+      ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+      SITE_URL: ${{ vars.SITE_URL }}
+      PAGES_PROJECT: ${{ vars.PAGES_PROJECT }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install
+        run: npm install --no-audit --no-fund
+
+      - name: Export snapshot from the Worker
+        run: |
+          set -euo pipefail
+          if [ -n "${API_BASE:-}" ] && [ -n "${ADMIN_TOKEN:-}" ]; then
+            npm run export
+          else
+            echo "::warning::API_BASE/ADMIN_TOKEN not configured yet — building the site from fixtures instead."
+            npm run demo
+            cp data/demo-events.json data/snapshot.json
+          fi
+
+      - name: Build static site
+        run: node scripts/build-site.mjs --input data/snapshot.json --out dist --site "${SITE_URL:-https://example.pages.dev}"
+
+      - name: Deploy to Cloudflare Pages
+        run: |
+          set -euo pipefail
+          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
+            echo "::error::Missing secret CLOUDFLARE_API_TOKEN"; exit 1
+          fi
+          npx wrangler pages deploy dist \
+            --project-name "${PAGES_PROJECT:-listing-alpha}" \
+            --branch main \
+            --commit-dirty=true

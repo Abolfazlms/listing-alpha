@@ -1,0 +1,65 @@
+name: weekly-report
+
+# Produces the paid research artefact and publishes it as a GitHub Release.
+# Weekly, not per-minute: this is a publishing job, not a service runtime.
+on:
+  schedule:
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      API_BASE: ${{ vars.API_BASE }}
+      ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install
+        run: npm install --no-audit --no-fund
+
+      - name: Export snapshot
+        run: |
+          set -euo pipefail
+          if [ -n "${API_BASE:-}" ] && [ -n "${ADMIN_TOKEN:-}" ]; then
+            npm run export
+          else
+            echo "::warning::No live API configured — generating the report from fixtures."
+            npm run demo
+            cp data/demo-events.json data/snapshot.json
+          fi
+
+      - name: Build report
+        run: node scripts/build-report.mjs --input data/snapshot.json --out data --label "$(date -u +%Y-%m-%d)"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="report-$(date -u +%Y-%m-%d)"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" data/report.md data/listings.csv --clobber
+          else
+            gh release create "$TAG" data/report.md data/listings.csv \
+              --title "Listing Alpha — weekly report $(date -u +%Y-%m-%d)" \
+              --notes-file data/report.md
+          fi
+
+      - name: Upload artefacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: report
+          path: |
+            data/report.md
+            data/listings.csv
+          retention-days: 30

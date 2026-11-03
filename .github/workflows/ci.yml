@@ -1,0 +1,47 @@
+name: ci
+
+# Build/test only. This workflow never runs the product — see docs/LEGAL.md.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install
+        run: npm install --no-audit --no-fund
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Offline pipeline demo
+        run: npm run demo
+
+      - name: Build the static site from fixtures
+        run: node scripts/build-site.mjs --input data/demo-events.json --out dist --site https://example.test
+
+      - name: Build the report artefact
+        run: node scripts/build-report.mjs --input data/demo-events.json --out data --label ci
+
+      - name: Upload preview
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-preview
+          path: dist
+          retention-days: 7

@@ -1,0 +1,20 @@
+{
+  "retCode": 0,
+  "retMsg": "OK",
+  "result": {
+    "list": [
+      {
+        "id": "ann-20261102-01",
+        "title": "Bybit Lists NOVAUSDT Perpetual Contract",
+        "publishTime": 1793583000000,
+        "url": "https://announcements.bybit.com/en/article/ann-20261102-01"
+      },
+      {
+        "id": "ann-20261102-02",
+        "title": "Bybit Will Add Spot Trading Pairs: NOVA/USDC",
+        "publishTime": 1793583600000,
+        "url": "https://announcements.bybit.com/en/article/ann-20261102-02"
+      }
+    ]
+  }
+}

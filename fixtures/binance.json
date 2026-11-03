@@ -1,0 +1,38 @@
+{
+  "code": "000000",
+  "message": null,
+  "messageDetail": null,
+  "data": {
+    "total": 3,
+    "catalogs": [
+      {
+        "catalogId": 48,
+        "catalogName": "New Cryptocurrency Listing",
+        "articles": [
+          {
+            "id": 950001,
+            "code": "a1b2c3d4e5f6",
+            "title": "Binance Will List Nova Protocol (NOVA)",
+            "releaseDate": 1793583000000,
+            "url": "https://www.binance.com/en/support/announcement/detail/a1b2c3d4e5f6"
+          },
+          {
+            "id": 950002,
+            "code": "b2c3d4e5f6a1",
+            "title": "Binance Will Delist OLD Token (OLDTOK)",
+            "releaseDate": 1793583600000,
+            "url": "https://www.binance.com/en/support/announcement/detail/b2c3d4e5f6a1"
+          },
+          {
+            "id": 950003,
+            "code": "c3d4e5f6a1b2",
+            "title": "Binance Futures Will Launch NOVAUSDT Perpetual Contract With Up to 50x Leverage",
+            "releaseDate": 1793584200000,
+            "url": "https://www.binance.com/en/support/announcement/detail/c3d4e5f6a1b2"
+          }
+        ]
+      }
+    ]
+  },
+  "success": true
+}

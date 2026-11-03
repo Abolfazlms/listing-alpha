@@ -1,0 +1,23 @@
+{
+  "code": "0",
+  "msg": "",
+  "data": [
+    {
+      "annType": "announcements-new-listings",
+      "details": [
+        {
+          "annId": 88001,
+          "title": "OKX to list Nova Protocol (NOVA) for spot trading",
+          "pTime": 1793583300000,
+          "url": "https://www.okx.com/support/hc/en-us/articles/88001"
+        },
+        {
+          "annId": 88002,
+          "title": "OKX will delist OLDTOK spot trading pairs",
+          "pTime": 1793583900000,
+          "url": "https://www.okx.com/support/hc/en-us/articles/88002"
+        }
+      ]
+    }
+  ]
+}

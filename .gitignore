@@ -1,0 +1,10 @@
+node_modules/
+.wrangler/
+dist/
+data/snapshot.json
+data/demo-events.json
+data/*.csv
+data/*.md
+.dev.vars
+*.log
+.DS_Store

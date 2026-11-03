@@ -1,0 +1,15 @@
+# Cloudflare Pages headers. Caching is the whole reason this site is cheap to
+# serve: static HTML that changes a few times a day.
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer-when-downgrade
+  Permissions-Policy: geolocation=(), microphone=(), camera=()
+
+/style.css
+  Cache-Control: public, max-age=86400
+
+/rss.xml
+  Cache-Control: public, max-age=600
+
+/sitemap.xml
+  Cache-Control: public, max-age=3600
