@@ -1,5 +1,7 @@
 # Listing Alpha
 
+[![ci](https://github.com/Abolfazlms/listing-alpha/actions/workflows/ci.yml/badge.svg)](https://github.com/Abolfazlms/listing-alpha/actions/workflows/ci.yml)
+
 > Exchange listing intelligence as a product: a pipeline that detects announcements
 > across eight venues, scores them, alerts a paying Telegram tier in seconds, and
 > publishes a free SEO surface + a weekly paid report.
