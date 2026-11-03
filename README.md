@@ -50,8 +50,10 @@ and outside the network boundary that blocks several exchanges from Iran.
 | Venue adapters | `src/pipeline/sources.js` | 8 exchanges, multi-endpoint failover, HTML fallback, generic JSON collector |
 | Normalisation | `src/pipeline/normalize.js` | kind classification, ticker extraction with blacklist, UTC-safe timestamps |
 | Scoring | `src/pipeline/score.js` | explainable 0–100, tier A–D |
+| Price reactions | `src/pipeline/reactions.js` | entry/1h/24h/7d/peak/drawdown from public klines, nulls when uncovered |
 | Persistence | `src/pipeline/store.js` | D1 queries, idempotent inserts, invoice/entitlement lifecycle |
 | Money | `src/worker/payments.js` | unique-amount USDT (TRC20) invoicing, on-chain matching, replay protection |
+| Bot | `src/worker/bot.js` | `/start`, `/pricing`, `/buy`, `/status` — the whole checkout in four commands |
 | Delivery | `src/worker/notify.js` | Telegram formatting, paid/free broadcast |
 | Loop | `src/worker/loop.js` | poll cycle + delayed free flush |
 | API | `src/worker/api.js` | events, stats, pricing, checkout, invoice status, admin export/poll |
@@ -63,10 +65,12 @@ and outside the network boundary that blocks several exchanges from Iran.
 
 ```bash
 npm install          # only devDependency is wrangler
-npm test             # 25 tests
+npm test             # 39 tests
 npm run demo         # full pipeline over recorded payloads + payment matcher
 npm run build:site -- --input data/demo-events.json --out dist
 npm run report -- --input data/demo-events.json --out data
+# needs network, usually run in CI rather than from Iran:
+npm run enrich -- --input data/demo-events.json --out data/reactions.json
 ```
 
 The demo needs no network, no Cloudflare account and no database. It prints exactly

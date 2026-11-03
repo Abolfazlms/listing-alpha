@@ -30,6 +30,24 @@ const summary = summarize(events);
 const highSignal = events.filter((e) => (e.score ?? 0) >= 80);
 const listings = events.filter((e) => e.kind === 'LISTING');
 
+// Optional: price reactions attached by scripts/enrich-reactions.mjs.
+const reactionsPath = args.reactions || join(outDir, 'reactions.json');
+let reactions = {};
+if (existsSync(reactionsPath)) {
+  try {
+    reactions = JSON.parse(readFileSync(reactionsPath, 'utf8')).reactions || {};
+  } catch {
+    reactions = {};
+  }
+}
+const enriched = events.filter((event) => reactions[event.id]);
+const h24Values = enriched
+  .map((event) => reactions[event.id]?.returns?.h24)
+  .filter((value) => typeof value === 'number')
+  .sort((a, b) => a - b);
+const medianH24 = h24Values.length ? h24Values[Math.floor(h24Values.length / 2)] : null;
+const fmtPct = (value) => (typeof value !== 'number' ? '—' : `${value > 0 ? '+' : ''}${value.toFixed(2)}%`);
+
 mkdirSync(outDir, { recursive: true });
 
 /* --------------------------------- CSV ---------------------------------- */
@@ -60,6 +78,31 @@ const csv = [
 
 writeFileSync(join(outDir, 'listings.csv'), csv);
 
+if (enriched.length) {
+  const reactionHeader = ['symbol', 'source', 'announced_at', 'entry', 'h1_pct', 'h24_pct', 'h168_pct', 'peak_pct', 'drawdown_pct', 'venue'];
+  const reactionCsv = [
+    reactionHeader.join(','),
+    ...enriched.map((event) => {
+      const reaction = reactions[event.id];
+      return [
+        event.symbol || '',
+        event.source,
+        event.announced_at,
+        reaction.entry,
+        reaction.returns?.h1 ?? '',
+        reaction.returns?.h24 ?? '',
+        reaction.returns?.h168 ?? '',
+        reaction.peak ?? '',
+        reaction.drawdown ?? '',
+        reaction.venue,
+      ]
+        .map(csvEscape)
+        .join(',');
+    }),
+  ].join('\n');
+  writeFileSync(join(outDir, 'reactions.csv'), reactionCsv);
+}
+
 /* -------------------------------- report -------------------------------- */
 
 const top = [...events].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0, 25);
@@ -67,7 +110,7 @@ const top = [...events].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)).slice(0,
 const report = `# Listing Alpha — Exchange Listing Report (${label})
 
 **Coverage window:** ${String(events.at(-1)?.announced_at || '').slice(0, 10)} → ${String(events[0]?.announced_at || '').slice(0, 10)}
-**Events:** ${summary.total} · **Spot listings:** ${listings.length} · **High-signal (A):** ${highSignal.length}
+**Events:** ${summary.total} · **Spot listings:** ${listings.length} · **High-signal (A):** ${highSignal.length} · **With price reaction:** ${enriched.length}
 **Venues:** ${summary.bySource.length} · **Mean detection latency:** ${formatLatency(summary.avgLatency)}
 
 ---
@@ -108,7 +151,24 @@ ${summary.topSymbols.slice(0, 10).map((s, i) => `${i + 1}. **${s.symbol}** — $
 |---|---:|---|---|---|---:|---|
 ${top.map((e) => `| ${e.meta?.tier || '-'} | ${e.score ?? 0} | ${e.source} | ${e.kind} | ${e.symbol || '—'} | ${formatLatency(e.latency_sec)} | ${String(e.title).replace(/\|/g, '\\|').slice(0, 90)} |`).join('\n')}
 
-## 6. Method and honesty notes
+## 6. What price did after the announcement
+
+${enriched.length === 0
+  ? '_No price series were attached for this edition. Run `node scripts/enrich-reactions.mjs` before building the report._'
+  : `Median 24-hour reaction across ${enriched.length} listings: **${fmtPct(medianH24)}**.
+
+| Symbol | Venue | Entry | +1h | +24h | +7d | Peak (7d) | Max drawdown |
+|---|---|---:|---:|---:|---:|---:|---:|
+${enriched.slice(0, 40).map((event) => {
+  const reaction = reactions[event.id];
+  return `| ${event.symbol || '—'} | ${event.source} | ${reaction.entry} | ${fmtPct(reaction.returns?.h1)} | ${fmtPct(reaction.returns?.h24)} | ${fmtPct(reaction.returns?.h168)} | ${fmtPct(reaction.peak)} | ${fmtPct(reaction.drawdown)} |`;
+}).join('\n')}
+
+`}Entry is the open of the first hourly candle at or after the announcement, so it can lag
+the announcement by up to an hour. Peak and drawdown are measured inside the 7-day window.
+A blank cell means the data did not cover that horizon — it is never interpolated.
+
+## 7. Method and honesty notes
 
 - **Source:** public announcement pages and APIs of each exchange. Only published, already-public
   information is recorded; nothing is scraped from behind a login.
@@ -121,7 +181,7 @@ ${top.map((e) => `| ${e.meta?.tier || '-'} | ${e.score ?? 0} | ${e.source} | ${e
 - **Delistings and maintenance notices** are included because they carry risk, and are labelled
   as such.
 
-## 7. Access
+## 8. Access
 
 The live, un-delayed stream and the full archive are available via Telegram and the API.
 See \`/pricing\` for terms. This report is generated automatically from the same pipeline, so

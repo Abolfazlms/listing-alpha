@@ -35,5 +35,7 @@ FREE_WINDOW_DAYS = "7"
 
 # Secrets (never commit): `npx wrangler secret put NAME`
 #   TELEGRAM_BOT_TOKEN
+#   TELEGRAM_WEBHOOK_SECRET  (any random string; Telegram echoes it back so only
+#                             genuine updates reach the bot)
 #   ADMIN_TOKEN
 #   TRONGRID_API_KEY   (optional, raises rate limits)

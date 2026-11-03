@@ -165,7 +165,30 @@ export async function handleApi(request, env) {
     return json({ valid: entitlement.valid, plan: entitlement.plan, expires: entitlement.expires_at });
   }
 
+  // --- telegram webhook ---------------------------------------------------
+  if (path === '/api/v1/telegram/webhook' && request.method === 'POST') {
+    if (env.TELEGRAM_WEBHOOK_SECRET) {
+      const provided = request.headers.get('x-telegram-bot-api-secret-token');
+      if (provided !== env.TELEGRAM_WEBHOOK_SECRET) return fail('bad webhook secret', 401);
+    }
+    const update = await request.json().catch(() => ({}));
+    const { handleUpdate } = await import('./bot.js');
+    // Awaited on purpose: the work is a single D1 write plus one Telegram call,
+    // and returning 200 before it lands makes /status races visible to buyers.
+    const result = await handleUpdate(update, env);
+    return json({ ok: true, ...result });
+  }
+
   // --- admin --------------------------------------------------------------
+  if (path === '/api/v1/admin/webhook' && request.method === 'POST') {
+    if (!isAdmin(request, env)) return fail('unauthorized', 401);
+    const { registerWebhook } = await import('./bot.js');
+    try {
+      return json({ ok: true, result: await registerWebhook(env) });
+    } catch (error) {
+      return fail(error.message, 400);
+    }
+  }
   if (path === '/api/v1/admin/poll' && request.method === 'POST') {
     if (!isAdmin(request, env)) return fail('unauthorized', 401);
     const { pollCycle } = await import('./loop.js');

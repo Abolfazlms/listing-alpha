@@ -238,6 +238,14 @@ export async function getInvoice(db, id) {
   return db.prepare('SELECT * FROM invoices WHERE id = ?').bind(id).first();
 }
 
+/** Most recent invoice for a Telegram chat, used by /status. */
+export async function latestInvoiceForChat(db, chatId) {
+  return db
+    .prepare('SELECT * FROM invoices WHERE telegram_chat = ? ORDER BY created_at DESC LIMIT 1')
+    .bind(String(chatId))
+    .first();
+}
+
 /** @param {D1Database} db */
 export async function pendingInvoices(db) {
   const { results } = await db

@@ -101,6 +101,7 @@ MERCHANT_TRON_ADDRESS = "T..."
 
 ```bash
 npx wrangler secret put TELEGRAM_BOT_TOKEN
+npx wrangler secret put TELEGRAM_WEBHOOK_SECRET   # یک رشته تصادفی
 npx wrangler secret put ADMIN_TOKEN          # یک UUID تصادفی
 # اختیاری، برای سقف بالاتر TronGrid:
 npx wrangler secret put TRONGRID_API_KEY
@@ -134,6 +135,22 @@ curl "https://listing-alpha.<account>.workers.dev/api/v1/events?limit=5"
 
 اگر همه چیز درست باشد، از این لحظه کرون هر ۵ دقیقه خودکار اجرا می‌شود.
 
+## گام ۷.۵ — اتصال ربات به فروش
+
+یک بار پس از هر استقرار اجرا کن تا تلگرام بداند پیام‌ها را کجا بفرستد:
+
+```bash
+curl -X POST -H "authorization: Bearer <ADMIN_TOKEN>" \
+  https://listing-alpha.<account>.workers.dev/api/v1/admin/webhook
+```
+
+بعد در تلگرام به ربات `/start` بده. باید منو را ببینی. `/buy month` باید فاکتور بسازد
+و `/status` وضعیت را نشان دهد.
+
+> اگر `401` گرفتی، یعنی `TELEGRAM_WEBHOOK_SECRET` ست نشده یا تلگرام هدر محرمانه را
+> نمی‌فرستد؛ دوباره `registerWebhook` را صدا بزن (مقدار secret را در همان درخواست
+> می‌گذارد).
+
 ## گام ۸ — سایت روی Cloudflare Pages
 
 ```bash
@@ -147,6 +164,14 @@ npx wrangler pages deploy dist --project-name listing-alpha
 ```bash
 API_BASE=https://listing-alpha.<account>.workers.dev ADMIN_TOKEN=<...> npm run export
 npm run build:site -- --input data/snapshot.json --out dist --site https://listing-alpha.pages.dev
+```
+
+برای گزارش با آمار واکنش قیمت (این گام به شبکه نیاز دارد؛ از ایران ممکن است بلاک باشد،
+از GitHub Actions کار می‌کند):
+
+```bash
+npm run enrich -- --input data/snapshot.json --out data/reactions.json --limit 40
+npm run report -- --input data/snapshot.json --out data
 ```
 
 ## گام ۹ — مخزن GitHub و اتوماسیون
